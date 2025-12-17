@@ -1,9 +1,10 @@
 from pydantic import BaseModel
+from typing import List
 
-class CreditRequest(BaseModel):
-    income: float
-    age: int
-    loan_amount: float
 
-class CreditResponse(BaseModel):
-    default_risk: int
+class CreditRiskRequest(BaseModel):
+    features: List[float]
+
+
+class CreditRiskResponse(BaseModel):
+    risk_probability: float

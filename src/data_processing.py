@@ -1,65 +1,34 @@
 import pandas as pd
-import numpy as np
+from sklearn.model_selection import train_test_split
 
 
-def build_features(df):
-    """
-    Task 3 & Task 4:
-    - Separates target variable (is_high_risk) if present
-    - Returns model-ready feature matrix X (DataFrame) and target vector y (array)
-    """
+TARGET_COLUMN = "FraudResult"   # change ONLY if your target column has a different name
+ID_COLUMNS = ["TransactionId"]  # drop ID-like columns
 
-    df = df.copy()
 
-    # --------------------
-    # TARGET EXTRACTION (Task 4)
-    # --------------------
-    if "is_high_risk" in df.columns:
-        y = df["is_high_risk"].values
-        df = df.drop(columns=["is_high_risk"])
-    else:
-        y = None
+def load_data(path: str) -> pd.DataFrame:
+    return pd.read_csv(path)
 
-    # --------------------
-    # FEATURE MATRIX (Task 3)
-    # --------------------
-    # Return X as DataFrame with column names (important for sklearn transformers)
-    X = df
+
+def build_features(df: pd.DataFrame):
+    # Drop ID columns if they exist
+    df = df.drop(columns=[c for c in ID_COLUMNS if c in df.columns])
+
+    # Separate target
+    y = df[TARGET_COLUMN]
+    X = df.drop(columns=[TARGET_COLUMN])
+
+    # Keep only numeric columns (VERY IMPORTANT)
+    X = X.select_dtypes(include=["int64", "float64"])
 
     return X, y
 
 
-def apply_woe(X, y):
-    """
-    Placeholder for WoE transformation.
-    Can be extended later using xverse or woe libraries.
-    """
-    return X
-
-
-def main():
-    """
-    Test run for feature engineering pipeline
-    """
-    df = pd.read_csv("data/raw/data_with_target.csv")
-
-    X_transformed, y = build_features(df)
-
-    print("Feature matrix shape:", X_transformed.shape)
-
-    if y is not None:
-        print("Target vector shape:", y.shape)
-    else:
-        print("No target vector found")
-
-    print("\nFirst 5 rows of feature matrix:")
-    print(X_transformed.head())
-
-    if y is not None:
-        X_woe = apply_woe(X_transformed, y)
-        print("\nWoE-transformed feature matrix shape:", X_woe.shape)
-        print(X_woe.head())
-
-
-if __name__ == "__main__":
-    main()
+def split_data(X, y, random_state=42):
+    return train_test_split(
+        X,
+        y,
+        test_size=0.2,
+        random_state=random_state,
+        stratify=y
+    )
